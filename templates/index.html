@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="index">
+<div class="jumbotron">
+    <h1> NHL API DEMO</h1>
+    <h3> by Jack Emond</h3>
+    <br>
+    <a href="#">Portfolio</a>
+</div>
+<br>
+<br>
+
+<div class="boxes">
+        {% for element in box_scores %}
+        <a  href="gamestats/{{element[10]}}">
+            <div class="boxscore">
+                <div class="logo">
+                    <img src="/static/images/logos/{{element[0]}}.png">
+                    <p>({{element[2]}} - {{element[3]}} - {{element[4]}})</p>
+                </div>
+                <div class="finalscore">
+                    <p class="score">{{element[1]}} - {{element[6]}}</p>
+                    
+                    <p class="gametime">
+                     {% if(element[11] == 'Live') %} 
+                            <div class="green">{{element[11]}}</div>
+                     {% else %}
+                            {{element[11]}}
+                    {% endif %}
+                    </p>
+                </div>
+                <div class="logo">
+                    <img src="/static/images/logos/{{element[5]}}.png">
+                    <br />
+                    <p>({{element[7]}} - {{element[8]}} - {{element[9]}})</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    
+    </div>
+</div>
+
+
+<br>
+<br>
+{% endblock %}

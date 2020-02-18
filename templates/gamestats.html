@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h2>GAME STATS</h2>
+</div>
+
+<div class="boxes">
+      <div class="boxscore">
+          <div class="logo">
+              <img src="/static/images/logos/{{ hometeam }}.png">
+              <p>{{home_stats}}</p>
+          </div>
+          <div class="finalscore">
+              <p class="score">{{score}}</p>
+              
+              <p class="gametime">
+                {% if gamestate == 'FINAL' or "PM" in gamestate %} 
+                    {{gamestate}}
+                {% else %}
+                    <div class="green">{{gamestate}}</div>
+                {% endif %}
+              </p>
+          </div>
+          <div class="logo">
+              <img src="/static/images/logos/{{ awayteam }}.png">
+              <br />
+              <p>{{away_stats}}</p>
+          </div>
+      </div>
+
+</div>
+
+
+<br>
+<br>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">{{ hometeam }}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">{{ awayteam }}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Highlights</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+          <table class="table">
+            <thead class="thead">
+              <tr>
+                <th scope="col">Player Name</th>
+                <th scope="col">Goals</th>
+                <th scope="col">Assists</th>
+                <th scope="col">Shots</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for element in home_player_stats %}
+              <tr>
+                <td>{{element[0]}}</td>
+                <td>{{element[1]}}</td>
+                <td>{{element[2]}}</td>
+                <td>{{element[3]}}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+          <table class="table">
+              <thead class="thead">
+                <tr>
+                  <th scope="col">Goalie Name</th>
+                  <th scope="col">Saves</th>
+                  <th scope="col">SA</th>
+                  <th scope="col">Sv %</th>
+                </tr>
+              </thead>
+              <tbody>
+               {% for element in home_goalie_stats %}
+                <tr>
+                  <td>{{element[0]}}</td>
+                  <td>{{element[1]}}</td>
+                  <td>{{element[2]}}</td>
+                  <td>{{element[3]}}%</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+                    
+        </div>
+        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+          <table class="table">
+            <thead class="thead">
+              <tr>
+                <th scope="col">Player Name</th>
+                <th scope="col">Goals</th>
+                <th scope="col">Assists</th>
+                <th scope="col">Shots</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for element in away_player_stats %}
+              <tr>
+                <td>{{element[0]}}</td>
+                <td>{{element[1]}}</td>
+                <td>{{element[2]}}</td>
+                <td>{{element[3]}}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+          <table class="table">
+            <thead class="thead">
+              <tr>
+                <th scope="col">Goalie Name</th>
+                <th scope="col">Saves</th>
+                <th scope="col">SA</th>
+                <th scope="col">Sv %</th>
+              </tr>
+            </thead>
+            <tbody>
+             {% for element in away_goalie_stats %}
+              <tr>
+                <td>{{element[0]}}</td>
+                <td>{{element[1]}}</td>
+                <td>{{element[2]}}</td>
+                <td>{{element[3]}}%</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+
+         
+        </div>
+        <div class="tab-pane fade"  id="contact" role="tabpanel" aria-labelledby="contact-tab">
+           {% for element in highlights_data %}
+          <div class="boxes">
+                <div class="highlights">
+                    <u><h3>Shots</h3>
+                    </u>
+                    <img src="/static/images/logos/{{hometeam}}.png"> {{element[0]}}
+                    <br><br>
+                      <img src="/static/images/logos/{{awayteam}}.png">{{element[3]}}
+                       
+                </div>
+                <div class="highlights">
+                    <u><h3>PP%</h3>
+                    </u>
+                    <img src="/static/images/logos/{{hometeam}}.png">{{element[1]}}%
+                    <br><br>
+                      <img src="/static/images/logos/{{awayteam}}.png">{{element[4]}}% 
+                       
+                </div>
+                <div class="highlights">
+                    <u><h3>Hits</h3>
+                    </u>
+                    <img src="/static/images/logos/{{hometeam}}.png">{{element[2]}}
+                    <br><br>
+                      <img src="/static/images/logos/{{awayteam}}.png">{{element[5]}}
+                       
+                </div>
+               
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+          
+        </div>
+      </div>
+<br>
+
+
+
+{% endblock %}
