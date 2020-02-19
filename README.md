@@ -7,6 +7,7 @@ This is a Python application that uses the NHL API to get data about live game d
 You will need:
 
 Python Version:
+
 Flask Version:
 
 ```
