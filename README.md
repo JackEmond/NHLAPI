@@ -1,6 +1,7 @@
 # NHL API using Python and Flask
 
-This is a Python application that uses the NHL API to get data about live game date going on in the NHL. 
+This is a Python application that uses the NHL API to get information on NHL games. 
+The NHL Api documentation can be found here: https://github.com/dword4/nhlapi
 
 ### Installing and Running the Application
 
@@ -14,10 +15,6 @@ Flask Version:
 
 Step 1:
 ```
-
-# Why make this?
-
-
 
 
 Thanks for reading!
