@@ -1,53 +1,96 @@
 import requests
 import datetime
+import dateutil.parser
 from flask import Flask, render_template
+from datetime import datetime as dt
 
 app = Flask(__name__)
 
+# Function that passes the game id number and returns the game state
+# if the game hasnt started the game start time is returned
+# if the game has started the period and how much time is remaining in the period is returned
+# if the game is over Final is returned
+# This is called twice. Once on the home page, and once on the individual game page
+def game_status(gameid):
+    json_game_id = 'https://statsapi.web.nhl.com/api/v1/game/' + str(gameid) + '/feed/live'
+
+    json_data = requests.get(json_game_id).json() 
+    gamestate = json_data['gameData']['status']['abstractGameState']
+    
+    if gamestate != "Preview":
+        gametime =  json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['periodTimeRemaining']
+        gameperiod = json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['ordinalNum']
+    else: 
+        gameperiod = gamestate
+
+    if gameperiod == 'Preview':
+        time = json_data['gameData']['datetime']['dateTime']
+        d = dt.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
+        # time is in grenwich mean time. Therefore convert it to est
+        hour = int(d.strftime('%I')) + 7 
+        second = d.strftime(':%M')
+        
+        # sometimes the hour passes through the api as military time and sometimes it is not 
+        # if time is 13 remove 12 hours since it is in military time
+        # This ultimately isnt great code. While it technically breaks if a game starts at 1 am
+        # the main issue is international games. 
+        # International games can start from 1am - 11am which would break the code
+        if hour >= 13:
+            return str(hour - 12) + second + 'PM'
+        else:
+            return str(hour) + second + 'PM'
+
+    # fix this what if the game is in overtime?
+    elif gamestate == 'Final':
+        return 'FINAL'
+    else:
+        return str(gameperiod) + ' ' + str(gametime)
+    #end of function
+
+#Home Page
 @app.route('/')
 def index():
-    #Get the date and convert it so that the 
+    #Get the date and convert it so that the api is able to grab all games occuring today
     date = datetime.date.today().strftime("%Y-%m-%d")
-    print(date)
+    #uncomment below to show gamedata for that specific date. Used for testing purposes
     url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2018-01-02&endDate=2018-01-02'
-    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
-    json_data = requests.get(url).json() 
+    #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
+    live_games = requests.get(url).json() 
     
     #Create An array to store the data
-    box_scores = []
+    team_stats = []
 
-    #Find Data in API and Store It So that it can be shown as box scores
-    for each in json_data['dates'][0]['games']:
-        box_scores.append([
+    #Find Each teams name, goals_scored, and record for all games occuring today
+    for team_stat in live_games['dates'][0]['games']:
+        gamestate = game_status(team_stat['gamePk'])
+        team_stats.append([
                     #Home Team Stats
-                    each['teams']['home']['team']['name'],                                  # Home Team Name {0}
-                    each['teams']['home']['score'],                                         # Home Team Score {1}
-                    each['teams']['home']['leagueRecord']['wins'],                          # Home Team Wins {2}
-                    each['teams']['home']['leagueRecord']['losses'],                        # Home Team Losses {3}
-                    each['teams']['home']['leagueRecord']['ot'],                            # Home Team OT Wins {4}
-                    
+                    team_stat['teams']['home']['team']['name'],                  # Home Team Name {0}
+                    team_stat['teams']['home']['score'],                         # Home Team Score {1}
+                    team_stat['teams']['home']['leagueRecord']['wins'],          # Home Team Wins {2}
+                    team_stat['teams']['home']['leagueRecord']['losses'],        # Home Team Losses {3}
+                    team_stat['teams']['home']['leagueRecord']['ot'],            # Home Team OT Wins {4}
                     #Away Team Stats
-                    each['teams']['away']['team']['name'],                                  # Away Team Name {5}
-                    each['teams']['away']['score'],                                         # Away Team Score {6}
-                    each['teams']['away']['leagueRecord']['wins'],                          # Away Team Wins {7}
-                    each['teams']['away']['leagueRecord']['losses'],                        # Away Team Losses {8}
-                    each['teams']['away']['leagueRecord']['ot'],                            # Away Team OT Wins {9}
-                    
+                    team_stat['teams']['away']['team']['name'],                  # Away Team Name {5}
+                    team_stat['teams']['away']['score'],                         # Away Team Score {6}
+                    team_stat['teams']['away']['leagueRecord']['wins'],          # Away Team Wins {7}
+                    team_stat['teams']['away']['leagueRecord']['losses'],        # Away Team Losses {8}
+                    team_stat['teams']['away']['leagueRecord']['ot'],            # Away Team OT Wins {9}
 
-                    each['gamePk'],                            # Game ID (to get game number) {10}
-                    each['status']['abstractGameState'],       # Game Status (eg. Live/Preview/Final)  {11}
-
+                    team_stat['gamePk'],                            # Game ID (so when you click the game it goes to the gamestats page) {10}
+                    gamestate,       # Game Status (eg. Live/Preview/Final)  {11}
                    ])
-   
-    
+        
+
     """Renders the home page."""
     return render_template(
         'index.html',
         title='Home Page',
-        box_scores = box_scores,
+        team_stats = team_stats,
         year=datetime.date.today().strftime("%Y")
     )
 
+# Individual Game Page
 @app.route('/gamestats/<gamePk>')
 def gamestats(gamePk):
     
@@ -61,7 +104,7 @@ def gamestats(gamePk):
     # Get home team api
     home_id = json_data['gameData']['teams']['home']['id']
     home_team_stats_api ='https://statsapi.web.nhl.com/api/v1/teams/' + str(home_id) + '?expand=team.stats'
-    home_team_stats_json_data = requests.get(home_team_stats_api).json() 
+    home_team_stats_json_data = requests.get(home_team_stats_api).json()['teams'][0]['teamStats'][0]['splits'][0]['stat']
 
      # Get away team api
     away_id = json_data['gameData']['teams']['away']['id']
@@ -74,9 +117,9 @@ def gamestats(gamePk):
 
     #Output home data
     hometeam = json_data['gameData']['teams']['home']['name']
-    home_wins = home_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']['wins']
-    home_losses = home_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']['losses']
-    home_ot = home_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']['ot']
+    home_wins = home_team_stats_json_data['wins']
+    home_losses = home_team_stats_json_data['losses']
+    home_ot = home_team_stats_json_data['ot']
 
     home_stats = '(' + str(home_wins) + ' - ' + str(home_losses)+ ' - ' + str(home_ot) + ')'
 
@@ -91,86 +134,73 @@ def gamestats(gamePk):
 
     away_stats = '(' + str(away_wins) + ' - ' + str(away_losses)+ ' - ' + str(away_ot) + ')'
 
-    #score =  str(home_score) + ' - ' + str(away_score)
-
-    gamestate = json_data['gameData']['status']['abstractGameState']
-    if gamestate != "Preview":
-        gametime =  json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['periodTimeRemaining']
-        gameperiod = json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['ordinalNum']
-    else: 
-        gameperiod = gamestate
-
-    if gameperiod == 'Preview':
-        time = json_data['gameData']['datetime']['dateTime']
-        d = datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
-        hour = d.strftime('%I') 
-        second = d.strftime(':%M')
-        gamestate= str(int(hour) + 7) + second + 'PM'
-    elif gameperiod == '3rd' and str(gametime) == '00:00':
-        gamestate = 'FINAL'
-    else:
-        gamestate = str(gameperiod) + ' ' + str(gametime)
-
+    gamestate = game_status(gamePk)
 
     home_player_stats = []
     home_goalie_stats = []
-    for e in json_data['liveData']['boxscore']['teams']['home']['players']:
-        if 'skaterStats' in json_data['liveData']['boxscore']['teams']['home']['players'][e]['stats']:
+    home_score = 0
+    home_data = json_data['liveData']['boxscore']['teams']['home']['players']
+    for e in home_data:
+        if 'skaterStats' in home_data[e]['stats']:
+            home_score += home_data[e]['stats']['skaterStats']['goals']
             home_player_stats.append([
-                    # THe reason skaterstats doesnt work might be because goalies have goaliestats not skaterstats
-                    json_data['liveData']['boxscore']['teams']['home']['players'][e]['person']['fullName'], 
-                    json_data['liveData']['boxscore']['teams']['home']['players'][e]['stats']['skaterStats']['goals'], 
-                    json_data['liveData']['boxscore']['teams']['home']['players'][e]['stats']['skaterStats']['assists'], 
-                    json_data['liveData']['boxscore']['teams']['home']['players'][e]['stats']['skaterStats']['shots'], 
+                    home_data[e]['person']['fullName'], 
+                    home_data[e]['stats']['skaterStats']['goals'], 
+                    home_data[e]['stats']['skaterStats']['assists'], 
+                    home_data[e]['stats']['skaterStats']['shots'], 
                    ])
-        elif 'goalieStats' in json_data['liveData']['boxscore']['teams']['home']['players'][e]['stats']:
-             
-            saves = json_data['liveData']['boxscore']['teams']['home']['players'][e]['stats']['goalieStats']['saves'] 
-            shots = json_data['liveData']['boxscore']['teams']['home']['players'][e]['stats']['goalieStats']['shots']
+        elif 'goalieStats' in home_data[e]['stats']:
+            saves = home_data[e]['stats']['goalieStats']['saves'] 
+            shots = home_data[e]['stats']['goalieStats']['shots']
             if shots != 0 or saves != 0:
                 save_percentage = saves / shots
             else:
                 save_percentage = 0
             home_goalie_stats.append([
-                    # THe reason skaterstats doesnt work might be because goalies have goaliestats not skaterstats
-                    json_data['liveData']['boxscore']['teams']['home']['players'][e]['person']['fullName'], 
+                    home_data[e]['person']['fullName'], 
                     saves,
                     shots,
-                    #.format makes it so its formatted to 3 decimal places if its less than 3 decimal places, round makes it so if the number has more than 3 decimal places it shows only 3 decimal places
+                    #makes it so it always has 3 decimal places 
                     "{0:.3f}".format(round(save_percentage, 3))
-
                    ])
 
+    home_player_stats.sort(key=lambda x:(x[1], x[2], x[3]))
+    home_player_stats.reverse()
 
     away_player_stats = []
     away_goalie_stats = []
+    away_score = 0
+
     for i in json_data['liveData']['boxscore']['teams']['away']['players']:
+        away_player = json_data['liveData']['boxscore']['teams']['away']['players'][i]
         if 'skaterStats' in json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']:
+            away_score += away_player['stats']['skaterStats']['goals']
             away_player_stats.append([
-                    # THe reason skaterstats doesnt work might be because goalies have goaliestats not skaterstats
-                    json_data['liveData']['boxscore']['teams']['away']['players'][i]['person']['fullName'], 
-                    json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']['skaterStats']['goals'], 
-                    json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']['skaterStats']['assists'], 
-                    json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']['skaterStats']['shots'], 
+                    away_player['person']['fullName'], 
+                    away_player['stats']['skaterStats']['goals'], 
+                    away_player['stats']['skaterStats']['assists'], 
+                    away_player['stats']['skaterStats']['shots'], 
 
                    ])
-        elif 'goalieStats' in json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']:
+        elif 'goalieStats' in away_player['stats']:
              
-            saves = json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']['goalieStats']['saves'] 
-            shots = json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']['goalieStats']['shots']
+            saves = away_player['stats']['goalieStats']['saves'] 
+            shots = away_player['stats']['goalieStats']['shots']
             if shots != 0 or saves != 0:
                 save_percentage = saves / shots
             else:
                 save_percentage = 0
+
             away_goalie_stats.append([
-                    # THe reason skaterstats doesnt work might be because goalies have goaliestats not skaterstats
-                    json_data['liveData']['boxscore']['teams']['away']['players'][i]['person']['fullName'], 
+                   away_player['person']['fullName'], 
                     saves,
                     shots,
                     #.format makes it so its formatted to 3 decimal places if its less than 3 decimal places, round makes it so if the number has more than 3 decimal places it shows only 3 decimal places
                     "{0:.3f}".format(round(save_percentage, 3))
 
                    ])
+
+
 
     #Highlights
 
@@ -192,8 +222,6 @@ def gamestats(gamePk):
 
                    ])
    
-    #Game Stats
-    
 
     return render_template(
          'gamestats.html',
@@ -205,22 +233,20 @@ def gamestats(gamePk):
          highlights_data = highlights_data,
         awayteam = awayteam,
         hometeam = hometeam,
+        home_score = home_score,
         home_stats = home_stats,
+        away_score = away_score,
         away_stats = away_stats,
         #score = score,
         gamestate = gamestate,
         year=datetime.date.today().strftime("%Y")
     )
 
-@app.route('/Contact')
-def contact():
-    return render_template(
-        'contact.html',
-        title='Contact Page',
-        year=datetime.date.today().strftime("%Y")
-    )
-
-
 
 if(__name__) == '__main__':
     app.run(debug=True)
+
+@app.route('/background_process_test')
+def background_process_test():
+    print ("Hello")
+    return ("nothing")

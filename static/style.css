@@ -104,6 +104,11 @@ footer p{
     margin-bottom: 30px;
     font-size: 30px;
 }
+
+.gamestats-score{
+    font-size: 3.2em;
+}
+
 .boxes .gametime{
     font-size: 18px;
 }
@@ -212,4 +217,8 @@ footer p{
 
 .contact .highlights img{
     width: 100px;
+}
+
+h3{
+    text-align: center;
 }

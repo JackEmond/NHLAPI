@@ -3,17 +3,14 @@
 {% block content %}
 
 <div class="index">
-<div class="jumbotron">
-    <h1> NHL API DEMO</h1>
-    <h3> by Jack Emond</h3>
+    <div class="jumbotron">
+        <h1> NHL API DEMO</h1>
+        <h3> by Jack Emond</h3>
+    </div>
     <br>
-    <a href="#">Portfolio</a>
-</div>
-<br>
-<br>
-
-<div class="boxes">
-        {% for element in box_scores %}
+    <br>
+    <div class="boxes">
+        {% for element in team_stats %}
         <a  href="gamestats/{{element[10]}}">
             <div class="boxscore">
                 <div class="logo">
@@ -22,13 +19,12 @@
                 </div>
                 <div class="finalscore">
                     <p class="score">{{element[1]}} - {{element[6]}}</p>
-                    
                     <p class="gametime">
-                     {% if(element[11] == 'Live') %} 
-                            <div class="green">{{element[11]}}</div>
-                     {% else %}
+                        {% if element[11] == 'FINAL' or "PM" in element[11] %} 
                             {{element[11]}}
-                    {% endif %}
+                        {% else %}
+                            <div class="green">{{element[11]}}</div>
+                        {% endif %}
                     </p>
                 </div>
                 <div class="logo">
@@ -42,8 +38,6 @@
     
     </div>
 </div>
-
-
 <br>
 <br>
 {% endblock %}
