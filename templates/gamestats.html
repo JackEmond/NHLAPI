@@ -2,16 +2,16 @@
 
 {% block content %}
 <div class="jumbotron">
-    <h2>GAME STATS</h2>
+    <h1>GAME STATS</h1>
 </div>
 
 <div class="boxes">
       <div class="boxscore">
-          <div class="logo">
+          <div class="team-info">
               <img src="/static/images/logos/{{ hometeam }}.png">
               <p>{{home_stats}}</p>
           </div>
-          <div class="finalscore">
+          <div class="game-status">
               <p class="gamestats-score">{{home_score}} - {{away_score}}</p>
               
               <p class="gametime">
@@ -22,13 +22,12 @@
                 {% endif %}
               </p>
           </div>
-          <div class="logo">
+          <div class="team-info">
               <img src="/static/images/logos/{{ awayteam }}.png">
               <br />
               <p>{{away_stats}}</p>
           </div>
       </div>
-
 </div>
 <br>
 <br>
@@ -49,7 +48,7 @@
 <div class="tab-content" id="myTabContent">
   <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
     <table class="table">
-      <thead class="thead">
+      <thead>
         <tr>
           <th scope="col">Player Name</th>
           <th scope="col">Goals</th>
@@ -69,7 +68,7 @@
       </tbody>
     </table>
     <table class="table">
-        <thead class="thead">
+        <thead>
           <tr>
             <th scope="col">Goalie Name</th>
             <th scope="col">Saves</th>
@@ -92,7 +91,7 @@
 
   <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
     <table class="table">
-      <thead class="thead">
+      <thead>
         <tr>
           <th scope="col">Player Name</th>
           <th scope="col">Goals</th>
@@ -112,7 +111,7 @@
       </tbody>
     </table>
     <table class="table">
-      <thead class="thead">
+      <thead>
         <tr>
           <th scope="col">Goalie Name</th>
           <th scope="col">Saves</th>
@@ -161,10 +160,5 @@
 {% else %}
 <h3>Player rosters will be shown closer to the start of the game</h3>
 {% endif %}   
-     
-<br>
-
-
-
 
 {% endblock %}

@@ -6,44 +6,39 @@ from datetime import datetime as dt
 
 app = Flask(__name__)
 
-# Function that passes the game id number and returns the game state
-# if the game hasnt started the game start time is returned
-# if the game has started the period and how much time is remaining in the period is returned
-# if the game is over Final is returned
-# This is called twice. Once on the home page, and once on the individual game page
+'''
+Function that passes the game id number and returns the game state
+if the game hasnt started the game start time is returned
+if the game has started the period and how much time is remaining in the period is returned
+if the game is over Final is returned
+This is called twice. Once on the home page, and once on the individual game page
+'''
 def game_status(gameid):
-    json_game_id = 'https://statsapi.web.nhl.com/api/v1/game/' + str(gameid) + '/feed/live'
 
+    #Determine the state of the game (Preview/Live/Finished)
+    json_game_id = 'https://statsapi.web.nhl.com/api/v1/game/' + str(gameid) + '/feed/live'
     json_data = requests.get(json_game_id).json() 
     gamestate = json_data['gameData']['status']['abstractGameState']
     
-    if gamestate != "Preview":
-        gametime =  json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['periodTimeRemaining']
-        gameperiod = json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['ordinalNum']
-    else: 
-        gameperiod = gamestate
-
-    if gameperiod == 'Preview':
+    if gamestate == 'Preview': #game has not started
         time = json_data['gameData']['datetime']['dateTime']
+        print(time)
         d = dt.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
         # time is in grenwich mean time. Therefore convert it to est
         hour = int(d.strftime('%I')) + 7 
         second = d.strftime(':%M')
-        
-        # sometimes the hour passes through the api as military time and sometimes it is not 
-        # if time is 13 remove 12 hours since it is in military time
-        # This ultimately isnt great code. While it technically breaks if a game starts at 1 am
-        # the main issue is international games. 
-        # International games can start from 1am - 11am which would break the code
+
+        # If in military time remove 12 hours 
         if hour >= 13:
             return str(hour - 12) + second + 'PM'
         else:
             return str(hour) + second + 'PM'
 
-    # fix this what if the game is in overtime?
-    elif gamestate == 'Final':
+    elif gamestate == 'Final': #game is over
         return 'FINAL'
-    else:
+    else: #game is live
+        gametime =  json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['periodTimeRemaining']
+        gameperiod = json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['ordinalNum']
         return str(gameperiod) + ' ' + str(gametime)
     #end of function
 
@@ -53,31 +48,31 @@ def index():
     #Get the date and convert it so that the api is able to grab all games occuring today
     date = datetime.date.today().strftime("%Y-%m-%d")
     #uncomment below to show gamedata for that specific date. Used for testing purposes
-    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2018-01-02&endDate=2018-01-02'
-    #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
+    #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2018-01-02&endDate=2018-01-02'
+    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
     live_games = requests.get(url).json() 
     
     #Create An array to store the data
-    team_stats = []
+    game_stats = []
 
     #Find Each teams name, goals_scored, and record for all games occuring today
-    for team_stat in live_games['dates'][0]['games']:
-        gamestate = game_status(team_stat['gamePk'])
-        team_stats.append([
+    for game_stat in live_games['dates'][0]['games']:
+        gamestate = game_status(game_stat['gamePk'])
+        game_stats.append([
                     #Home Team Stats
-                    team_stat['teams']['home']['team']['name'],                  # Home Team Name {0}
-                    team_stat['teams']['home']['score'],                         # Home Team Score {1}
-                    team_stat['teams']['home']['leagueRecord']['wins'],          # Home Team Wins {2}
-                    team_stat['teams']['home']['leagueRecord']['losses'],        # Home Team Losses {3}
-                    team_stat['teams']['home']['leagueRecord']['ot'],            # Home Team OT Wins {4}
+                    game_stat['teams']['home']['team']['name'],                  # Home Team Name {0}
+                    game_stat['teams']['home']['score'],                         # Home Team Score {1}
+                    game_stat['teams']['home']['leagueRecord']['wins'],          # Home Team Wins {2}
+                    game_stat['teams']['home']['leagueRecord']['losses'],        # Home Team Losses {3}
+                    game_stat['teams']['home']['leagueRecord']['ot'],            # Home Team OT Wins {4}
                     #Away Team Stats
-                    team_stat['teams']['away']['team']['name'],                  # Away Team Name {5}
-                    team_stat['teams']['away']['score'],                         # Away Team Score {6}
-                    team_stat['teams']['away']['leagueRecord']['wins'],          # Away Team Wins {7}
-                    team_stat['teams']['away']['leagueRecord']['losses'],        # Away Team Losses {8}
-                    team_stat['teams']['away']['leagueRecord']['ot'],            # Away Team OT Wins {9}
+                    game_stat['teams']['away']['team']['name'],                  # Away Team Name {5}
+                    game_stat['teams']['away']['score'],                         # Away Team Score {6}
+                    game_stat['teams']['away']['leagueRecord']['wins'],          # Away Team Wins {7}
+                    game_stat['teams']['away']['leagueRecord']['losses'],        # Away Team Losses {8}
+                    game_stat['teams']['away']['leagueRecord']['ot'],            # Away Team OT Wins {9}
 
-                    team_stat['gamePk'],                            # Game ID (so when you click the game it goes to the gamestats page) {10}
+                    game_stat['gamePk'],                            # Game ID (so when you click the game it goes to the gamestats page) {10}
                     gamestate,       # Game Status (eg. Live/Preview/Final)  {11}
                    ])
         
@@ -86,7 +81,7 @@ def index():
     return render_template(
         'index.html',
         title='Home Page',
-        team_stats = team_stats,
+        game_stats = game_stats,
         year=datetime.date.today().strftime("%Y")
     )
 
@@ -100,7 +95,6 @@ def gamestats(gamePk):
     game_api = 'https://statsapi.web.nhl.com/api/v1/game/' + gamePk + '/feed/live'
     json_data = requests.get(game_api).json() 
 
-
     # Get home team api
     home_id = json_data['gameData']['teams']['home']['id']
     home_team_stats_api ='https://statsapi.web.nhl.com/api/v1/teams/' + str(home_id) + '?expand=team.stats'
@@ -111,9 +105,6 @@ def gamestats(gamePk):
     #away_team_stats_api ='https://statsapi.web.nhl.com/api/v1/schedule?teamId=' + str(away_id) 
     away_team_stats_api ='https://statsapi.web.nhl.com/api/v1/teams/' + str(away_id) + '?expand=team.stats'
     away_team_stats_json_data = requests.get(away_team_stats_api).json() 
-
-
-  
 
     #Output home data
     hometeam = json_data['gameData']['teams']['home']['name']
@@ -126,11 +117,10 @@ def gamestats(gamePk):
     #Output away data
     awayteam = json_data['gameData']['teams']['away']['name']
 
-    #away_score = away_team_stats_json_data ['dates'][0]['games'][0]['teams']['away']['score']
-
-    away_wins = away_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']['wins']
-    away_losses = away_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']['losses']
-    away_ot = away_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']['ot']
+    away_team_stats = away_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']
+    away_wins = away_team_stats['wins']
+    away_losses = away_team_stats['losses']
+    away_ot = away_team_stats['ot']
 
     away_stats = '(' + str(away_wins) + ' - ' + str(away_losses)+ ' - ' + str(away_ot) + ')'
 
@@ -200,7 +190,8 @@ def gamestats(gamePk):
 
                    ])
 
-
+    away_player_stats.sort(key=lambda x:(x[1], x[2], x[3]))
+    away_player_stats.reverse()
 
     #Highlights
 
@@ -245,8 +236,3 @@ def gamestats(gamePk):
 
 if(__name__) == '__main__':
     app.run(debug=True)
-
-@app.route('/background_process_test')
-def background_process_test():
-    print ("Hello")
-    return ("nothing")

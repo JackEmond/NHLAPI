@@ -6,8 +6,31 @@ a{
     color: #000;
 }
 
+p{
+    margin: 0;    
+}
+
+h1{
+    font-family: 'Teko', sans-serif;
+    font-weight: 600;
+    font-size: 60px;
+}
+
+h2{
+    font-family: 'Teko', sans-serif;
+    font-size: 2.3em;
+    margin: 0;
+}
+
+.jumbotron{
+    text-align: center;
+    background-color: #edebeb;
+    font-family: 'Teko', sans-serif;
+    margin-bottom: 2em; 
+}
+
+
 /* Layout */
-/* ////// */
 
 /* Nav Bar  */
 .navbar-custom {
@@ -15,17 +38,16 @@ a{
     background-color: #262626;
     font-size: 30px;
 }
-/* change the brand and text color */
-.navbar-custom .navbar-brand,
-.navbar-custom .navbar-text {
-    color: rgba(255,255,255, 1);
-}
+
 /* change the link color */
 .navbar-custom .navbar-nav .nav-link {
     color: rgba(255,255,255, 1);
     margin-left: 50px;
 }
+/* change the brand and text color */
 /* change the color of active or hovered links */
+.navbar-custom .navbar-brand,
+.navbar-custom .navbar-text,
 .navbar-custom .nav-item.active .nav-link,
 .navbar-custom .nav-item:focus .nav-link,
 .navbar-custom .nav-item:hover .nav-link {
@@ -50,78 +72,22 @@ footer{
     text-align: center;
     background-color: #262626; 
     color: #d9d6d6;
+    padding: 1.6em;
+    margin-top: 3.6em;
 }
 
 footer a{
-    margin: 20px;
     color: #d9d6d6;
+    padding: 20px;
 }
 
 footer p{
-    margin-top: 30px;
+    padding: 20px;
     color: #a9a7a7;
 }
 
-/* Index Page */ 
-/* /////////  */
-.index h3{
-    font-family: 'Teko', sans-serif;
-    font-size: 25px;
-    margin: 0;
-}
 
-.index h1{
-    font-family: 'Teko', sans-serif;
-    font-weight: 600;
-    font-size: 60px;
-}
-
-.jumbotron{
-    text-align: center;
-    background-color: #edebeb;
-    font-family: 'Teko', sans-serif;
-
-    
-}
-
-.jumbotron a{
-    color: white;
-    background-color: #262626;
-    padding: 10px 20px;
-}
-
-.jumbotron a:hover{
-    color: rgba(255,255,255, 0.5);
-    text-decoration: none;
-}
-
-/* Box Score */
-.logo img, .logo p{
-    margin-top: 20px;
-}
-
-.finalscore .score{
-    margin-bottom: 30px;
-    font-size: 30px;
-}
-
-.gamestats-score{
-    font-size: 3.2em;
-}
-
-.boxes .gametime{
-    font-size: 18px;
-}
-.boxscore {
-    border-style: solid;
-    border-color: #262626;
-    border-width: 7px;
-}
-
-.boxscore img {
-    height: 60px;
-}
-
+/* Index */
 .boxes {
     display: grid;
     font-weight: 600;
@@ -130,24 +96,51 @@ footer p{
     grid-template-rows: repeat(auto-fill, 150px);
 
 }
+.boxscore {
+    border-style: solid;
+    border-color: #262626;
+    border-width: 7px;
+    padding-bottom: 1em;
+}
 
+.team-info img, .team-info p{
+    margin-top: 20px;
+}
+
+.gamestats-score{
+    font-size: 1.7rem;
+}
+
+.boxes .gametime{
+    font-size: 18px;
+}
+
+
+.boxscore img {
+    height: 60px;
+}
 .boxes a:hover{
     color: #000;
     text-decoration: none;
 }
 
-.boxscore .logo {
+.boxscore .team-info {
     width: 38%;
     height: 100%;
     text-align: center;
     display: inline-block;
 }
 
-.boxscore .finalscore {
+.boxscore .game-status {
     display: inline-block;
     width: 20%;
     text-align: center;
     height: 100%;
+}
+
+.game-status .score{
+    margin-bottom: 30px;
+    font-size: 1.7em;
 }
 
 .green{
@@ -156,40 +149,13 @@ footer p{
 
 /* Game Stats */
 /**************/
-.thead{
+thead{
     background-color: #262626;
     color: #fff;
-}
-.about-section {
-    max-width: 1280px;
-    overflow: hidden;
-    padding-bottom: 90px;
-    margin: 0 auto;
-}
-
-.about-section h3 {
-    color: #333;
-    margin: 0;
-}
-
-.box {
-    box-sizing: border-box;
-    width: 22%;
-    max-width: 275px;
-    height: 275px;
-    float: left;
-    border: 3px solid #000;
-    margin-left: 4%;
-}
-
-#firstBox{
-    margin-left: 0px;
 }
 
 /* Highlights */
 .highlights {
-    border-color: #fff;
-    border-width: 0px;
     text-align: center;
 }
 
@@ -199,26 +165,3 @@ footer p{
 
 }
 
-.jumbotron h2{
-    font-size: 60px;
-    text-transform: uppercase;
-}
-
-/* Contact */
-.contact p{
-    font-size: 26px;
-    font-family: sans-serif;
-    font-weight: 100;
-}
-
-.contact p a {
-    color: #72bad7;
-}
-
-.contact .highlights img{
-    width: 100px;
-}
-
-h3{
-    text-align: center;
-}
