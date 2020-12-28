@@ -22,7 +22,6 @@ def game_status(gameid):
     
     if gamestate == 'Preview': #game has not started
         time = json_data['gameData']['datetime']['dateTime']
-        print(time)
         d = dt.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
         # time is in grenwich mean time. Therefore convert it to est
         hour = int(d.strftime('%I')) + 7 
@@ -54,8 +53,14 @@ def index():
     
     #Create An array to store the data
     game_stats = []
+    are_their_games_today = 'yes'
 
     #Find Each teams name, goals_scored, and record for all games occuring today
+    if live_games:
+        url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2019-02-02&endDate=2019-02-02'
+        live_games = requests.get(url).json() 
+        are_their_games_today = 'no'
+    
     for game_stat in live_games['dates'][0]['games']:
         gamestate = game_status(game_stat['gamePk'])
         game_stats.append([
@@ -74,16 +79,19 @@ def index():
 
                     game_stat['gamePk'],                            # Game ID (so when you click the game it goes to the gamestats page) {10}
                     gamestate,       # Game Status (eg. Live/Preview/Final)  {11}
-                   ])
+                ])
         
-
     """Renders the home page."""
     return render_template(
         'index.html',
         title='Home Page',
         game_stats = game_stats,
+        are_their_games_today = are_their_games_today,
         year=datetime.date.today().strftime("%Y")
     )
+
+
+
 
 # Individual Game Page
 @app.route('/gamestats/<gamePk>')
@@ -100,7 +108,7 @@ def gamestats(gamePk):
     home_team_stats_api ='https://statsapi.web.nhl.com/api/v1/teams/' + str(home_id) + '?expand=team.stats'
     home_team_stats_json_data = requests.get(home_team_stats_api).json()['teams'][0]['teamStats'][0]['splits'][0]['stat']
 
-     # Get away team api
+    # Get away team api
     away_id = json_data['gameData']['teams']['away']['id']
     #away_team_stats_api ='https://statsapi.web.nhl.com/api/v1/schedule?teamId=' + str(away_id) 
     away_team_stats_api ='https://statsapi.web.nhl.com/api/v1/teams/' + str(away_id) + '?expand=team.stats'
@@ -215,13 +223,13 @@ def gamestats(gamePk):
    
 
     return render_template(
-         'gamestats.html',
-         title='Game Stats',
-         away_player_stats = away_player_stats,
-         away_goalie_stats = away_goalie_stats,
-         home_player_stats = home_player_stats,
-         home_goalie_stats = home_goalie_stats,
-         highlights_data = highlights_data,
+        'gamestats.html',
+        title='Game Stats',
+        away_player_stats = away_player_stats,
+        away_goalie_stats = away_goalie_stats,
+        home_player_stats = home_player_stats,
+        home_goalie_stats = home_goalie_stats,
+        highlights_data = highlights_data,
         awayteam = awayteam,
         hometeam = hometeam,
         home_score = home_score,

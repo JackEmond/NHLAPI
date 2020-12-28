@@ -6,6 +6,12 @@
     <h2> by Jack Emond</h2>
 </div>
 
+{% if are_their_games_today == 'no' %}
+<h2>Their are no NHL games today. So instead I will show you what the website would look like if their were active games. I will do this by pulling data
+    from February 2nd 2019.</h2>
+<br>
+{% endif %}
+
 <div class="boxes">
     {% for element in game_stats %}
     <a href="gamestats/{{element[10]}}">
@@ -33,5 +39,6 @@
     </a>
     {% endfor %}
 </div>
+
 
 {% endblock %}
