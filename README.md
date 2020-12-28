@@ -3,12 +3,13 @@
 This is a Python/Flask application that uses the NHL API to get information on NHL games. 
 The NHL Api documentation can be found here: https://github.com/dword4/nhlapi
 
-Uses:
+# Uses:
+
 Python 3.7.4
-```
+
 Flask  1.1.1
 
-## Pages
+# Pages
 
 #### Index:
 The home page shows all games happening on the current date. It shows the status of the game, both  teams records, plus the score.
