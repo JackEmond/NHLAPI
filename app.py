@@ -20,7 +20,7 @@ def game_status(gameid):
     json_data = requests.get(json_game_id).json() 
     gamestate = json_data['gameData']['status']['abstractGameState']
     
-    if gamestate == 'Preview': #game has not started
+    if gamestate == 'Preview': #game has not started. Return when it starts
         time = json_data['gameData']['datetime']['dateTime']
         d = dt.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
         # time is in grenwich mean time. Therefore convert it to est
@@ -33,9 +33,9 @@ def game_status(gameid):
         else:
             return str(hour) + second + 'PM'
 
-    elif gamestate == 'Final': #game is over
+    elif gamestate == 'Final': 
         return 'FINAL'
-    else: #game is live
+    else: #game is live. Return what period and how much time is left
         gametime =  json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['periodTimeRemaining']
         gameperiod = json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['ordinalNum']
         return str(gameperiod) + ' ' + str(gametime)
@@ -57,7 +57,7 @@ def index():
 
     #Find Each teams name, goals_scored, and record for all games occuring today
     if live_games:
-        url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2019-02-02&endDate=2019-02-02'
+        url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2017-04-06&endDate=2017-04-06'
         live_games = requests.get(url).json() 
         are_their_games_today = 'no'
     
@@ -91,56 +91,48 @@ def index():
     )
 
 
-
-
 # Individual Game Page
 @app.route('/gamestats/<gamePk>')
 def gamestats(gamePk):
     
     #GET NHL API Data
+    date = datetime.date.today().strftime("%Y-%m-%d")
+    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
+    live_games = requests.get(url).json() 
     
+    if live_games:
+        url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2017-04-06&endDate=2017-04-06'
+        live_games = requests.get(url).json() 
+
+
+    for game_stat in live_games['dates'][0]['games']:
+        if str(game_stat['gamePk']) == gamePk:
+            #homestats
+            hometeam = game_stat['teams']['home']['team']['name']                  # Home Team Name
+            home_wins = game_stat['teams']['home']['leagueRecord']['wins']         # Home Team Wins 
+            home_losses = game_stat['teams']['home']['leagueRecord']['losses']        # Home Team Losses
+            home_ot= game_stat['teams']['home']['leagueRecord']['ot']          # Home Team OT Wins
+            home_score = game_stat['teams']['home']['score']
+            #awaystats
+            awayteam = game_stat['teams']['away']['team']['name']                 # Away Team Name 
+            away_wins = game_stat['teams']['away']['leagueRecord']['wins']         # Away Team Wins 
+            away_losses = game_stat['teams']['away']['leagueRecord']['losses']        # Away Team Losses 
+            away_ot = game_stat['teams']['away']['leagueRecord']['ot']
+            away_score = game_stat['teams']['away']['score']
+
+
     # Get single game API
     game_api = 'https://statsapi.web.nhl.com/api/v1/game/' + gamePk + '/feed/live'
     json_data = requests.get(game_api).json() 
-
-    # Get home team api
-    home_id = json_data['gameData']['teams']['home']['id']
-    home_team_stats_api ='https://statsapi.web.nhl.com/api/v1/teams/' + str(home_id) + '?expand=team.stats'
-    home_team_stats_json_data = requests.get(home_team_stats_api).json()['teams'][0]['teamStats'][0]['splits'][0]['stat']
-
-    # Get away team api
-    away_id = json_data['gameData']['teams']['away']['id']
-    #away_team_stats_api ='https://statsapi.web.nhl.com/api/v1/schedule?teamId=' + str(away_id) 
-    away_team_stats_api ='https://statsapi.web.nhl.com/api/v1/teams/' + str(away_id) + '?expand=team.stats'
-    away_team_stats_json_data = requests.get(away_team_stats_api).json() 
-
-    #Output home data
-    hometeam = json_data['gameData']['teams']['home']['name']
-    home_wins = home_team_stats_json_data['wins']
-    home_losses = home_team_stats_json_data['losses']
-    home_ot = home_team_stats_json_data['ot']
-
-    home_stats = '(' + str(home_wins) + ' - ' + str(home_losses)+ ' - ' + str(home_ot) + ')'
-
-    #Output away data
-    awayteam = json_data['gameData']['teams']['away']['name']
-
-    away_team_stats = away_team_stats_json_data['teams'][0]['teamStats'][0]['splits'][0]['stat']
-    away_wins = away_team_stats['wins']
-    away_losses = away_team_stats['losses']
-    away_ot = away_team_stats['ot']
-
-    away_stats = '(' + str(away_wins) + ' - ' + str(away_losses)+ ' - ' + str(away_ot) + ')'
 
     gamestate = game_status(gamePk)
 
     home_player_stats = []
     home_goalie_stats = []
-    home_score = 0
+    
     home_data = json_data['liveData']['boxscore']['teams']['home']['players']
     for e in home_data:
         if 'skaterStats' in home_data[e]['stats']:
-            home_score += home_data[e]['stats']['skaterStats']['goals']
             home_player_stats.append([
                     home_data[e]['person']['fullName'], 
                     home_data[e]['stats']['skaterStats']['goals'], 
@@ -167,12 +159,10 @@ def gamestats(gamePk):
 
     away_player_stats = []
     away_goalie_stats = []
-    away_score = 0
 
     for i in json_data['liveData']['boxscore']['teams']['away']['players']:
         away_player = json_data['liveData']['boxscore']['teams']['away']['players'][i]
         if 'skaterStats' in json_data['liveData']['boxscore']['teams']['away']['players'][i]['stats']:
-            away_score += away_player['stats']['skaterStats']['goals']
             away_player_stats.append([
                     away_player['person']['fullName'], 
                     away_player['stats']['skaterStats']['goals'], 
@@ -181,7 +171,6 @@ def gamestats(gamePk):
 
                    ])
         elif 'goalieStats' in away_player['stats']:
-             
             saves = away_player['stats']['goalieStats']['saves'] 
             shots = away_player['stats']['goalieStats']['shots']
             if shots != 0 or saves != 0:
@@ -233,9 +222,9 @@ def gamestats(gamePk):
         awayteam = awayteam,
         hometeam = hometeam,
         home_score = home_score,
-        home_stats = home_stats,
+        home_stats = '(' + str(home_wins) + ' - ' + str(home_losses)+ ' - ' + str(home_ot) + ')',
         away_score = away_score,
-        away_stats = away_stats,
+        away_stats = '(' + str(away_wins) + ' - ' + str(away_losses)+ ' - ' + str(away_ot) + ')',
         #score = score,
         gamestate = gamestate,
         year=datetime.date.today().strftime("%Y")
