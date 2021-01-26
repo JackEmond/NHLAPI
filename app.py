@@ -1,11 +1,11 @@
 import requests
 import datetime
+import json
 import dateutil.parser
 from flask import Flask, render_template
 from datetime import datetime as dt
 
 app = Flask(__name__)
-
 '''
 Function that passes the game id number and returns the game state
 if the game hasnt started the game start time is returned
@@ -14,6 +14,7 @@ if the game is over Final is returned
 This is called twice. Once on the home page, and once on the individual game page
 '''
 def game_status(gameid):
+    #rename determine_game_state
 
     #Determine the state of the game (Preview/Live/Finished)
     json_game_id = 'https://statsapi.web.nhl.com/api/v1/game/' + str(gameid) + '/feed/live'
@@ -49,38 +50,41 @@ def index():
     #uncomment below to show gamedata for that specific date. Used for testing purposes
     #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2018-01-02&endDate=2018-01-02'
     url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
-    live_games = requests.get(url).json() 
-    
-    #Create An array to store the data
+    json_data = requests.get(url)
+    live_games = json.loads(json_data.text)
+
     game_stats = []
     are_their_games_today = 'yes'
-
-    #Find Each teams name, goals_scored, and record for all games occuring today
-    if live_games:
+    
+    #if their are no games today instead show dummy data
+    if not live_games:
         url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2019-02-02&endDate=2019-02-02'
         live_games = requests.get(url).json() 
         are_their_games_today = 'no'
     
     for game_stat in live_games['dates'][0]['games']:
         gamestate = game_status(game_stat['gamePk'])
-        game_stats.append([
-                    #Home Team Stats
-                    game_stat['teams']['home']['team']['name'],                  # Home Team Name {0}
-                    game_stat['teams']['home']['score'],                         # Home Team Score {1}
-                    game_stat['teams']['home']['leagueRecord']['wins'],          # Home Team Wins {2}
-                    game_stat['teams']['home']['leagueRecord']['losses'],        # Home Team Losses {3}
-                    game_stat['teams']['home']['leagueRecord']['ot'],            # Home Team OT Wins {4}
-                    #Away Team Stats
-                    game_stat['teams']['away']['team']['name'],                  # Away Team Name {5}
-                    game_stat['teams']['away']['score'],                         # Away Team Score {6}
-                    game_stat['teams']['away']['leagueRecord']['wins'],          # Away Team Wins {7}
-                    game_stat['teams']['away']['leagueRecord']['losses'],        # Away Team Losses {8}
-                    game_stat['teams']['away']['leagueRecord']['ot'],            # Away Team OT Wins {9}
+        single_game_stats = {
+             #Home Team Stats
+            'Home Team Name' : game_stat['teams']['home']['team']['name'],                  # Home Team Name {0}
+            'Home Team Score' : game_stat['teams']['home']['score'],                         # Home Team Score {1}
+            'Home Team Wins' : game_stat['teams']['home']['leagueRecord']['wins'],          # Home Team Wins {2}
+            'Home Team Losses' : game_stat['teams']['home']['leagueRecord']['losses'],        # Home Team Losses {3}
+            'Home Team OT' : game_stat['teams']['home']['leagueRecord']['ot'],            # Home Team OT Wins {4}
+            
+            #Away Team Stats
+            'Away Team Name' : game_stat['teams']['away']['team']['name'],                  # Away Team Name {5}
+            'Away Team Score' : game_stat['teams']['away']['score'],                         # Away Team Score {6}
+            'Away Team Wins' : game_stat['teams']['away']['leagueRecord']['wins'],          # Away Team Wins {7}
+            'Away Team Losses' : game_stat['teams']['away']['leagueRecord']['losses'],        # Away Team Losses {8}
+            'Away Team OT' : game_stat['teams']['away']['leagueRecord']['ot'],            # Away Team OT Wins {9}
 
-                    game_stat['gamePk'],                            # Game ID (so when you click the game it goes to the gamestats page) {10}
-                    gamestate,       # Game Status (eg. Live/Preview/Final)  {11}
-                ])
-        
+            'Game ID' : game_stat['gamePk'],                            # Game ID (so when you click the game it goes to the gamestats page) {10}
+            'Game State' : gamestate,       # G
+        }
+        game_stats.append(single_game_stats)
+
+
     """Renders the home page."""
     return render_template(
         'index.html',

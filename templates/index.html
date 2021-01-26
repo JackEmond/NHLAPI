@@ -12,28 +12,29 @@
 <br>
 {% endif %}
 
+
 <div class="boxes">
-    {% for element in game_stats %}
-    <a href="gamestats/{{element[10]}}">
+    {% for game_stat in game_stats %}
+    <a href="gamestats/{{game_stat['Game ID']}}">
         <div class="boxscore">
             <div class="team-info"> <!--Home Team-->
-                <img src="/static/images/logos/{{element[0]}}.png">
-                <p>({{element[2]}} - {{element[3]}} - {{element[4]}})</p>
+                <img src="/static/images/Logos/{{game_stat['Home Team Name']}}.png">
+                <p>({{game_stat['Home Team Wins']}} - {{game_stat['Home Team Losses']}} - {{game_stat['Home Team OT']}})</p>
             </div>
             <div class="game-status">
-                <p class="score">{{element[1]}} - {{element[6]}}</p>
+                <p class="score">{{game_stat['Home Team Score']}} - {{game_stat['Away Team Score']}}</p>
                 <p>
-                    {% if element[11] == 'FINAL' or "PM" in element[11] %} 
-                        {{element[11]}}
+                    {% if game_stat['Game State'] == 'FINAL' or "PM" in game_stat['Game State'] %} 
+                        {{game_stat['Game State']}}
                     {% else %}
-                        <div class="green">{{element[11]}}</div>
+                        <div class="green">{{game_stat['Game State']}}</div>
                     {% endif %}
                 </p>
             </div>
             <div class="team-info"> <!--Away Team-->
-                <img src="/static/images/logos/{{element[5]}}.png">
+                <img src="/static/images/Logos/{{game_stat['Away Team Name']}}.png">
                 <br />
-                <p>({{element[7]}} - {{element[8]}} - {{element[9]}})</p>
+                <p>({{game_stat['Away Team Wins']}} - {{game_stat['Away Team Losses']}} - {{game_stat['Away Team OT']}})</p>
             </div>
         </div>
     </a>
