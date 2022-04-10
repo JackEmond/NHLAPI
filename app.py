@@ -11,7 +11,6 @@ Function that passes the game id number and returns the game state
 if the game hasnt started the game start time is returned
 if the game has started the period and how much time is remaining in the period is returned
 if the game is over Final is returned
-This is called twice. Once on the home page, and once on the individual game page
 '''
 def game_status(gameid):
 
@@ -43,23 +42,24 @@ def game_status(gameid):
 
 def getGameStats(game_stat):
     gamestate = game_status(game_stat['gamePk'])
-    return [
-        #Home Team Stats
-        game_stat['teams']['home']['team']['name'],                  # Home Team Name {0}
-        game_stat['teams']['home']['score'],                         # Home Team Score {1}
-        game_stat['teams']['home']['leagueRecord']['wins'],          # Home Team Wins {2}
-        game_stat['teams']['home']['leagueRecord']['losses'],        # Home Team Losses {3}
-        game_stat['teams']['home']['leagueRecord']['ot'],            # Home Team OT Wins {4}
-        #Away Team Stats
-        game_stat['teams']['away']['team']['name'],                  # Away Team Name {5}
-        game_stat['teams']['away']['score'],                         # Away Team Score {6}
-        game_stat['teams']['away']['leagueRecord']['wins'],          # Away Team Wins {7}
-        game_stat['teams']['away']['leagueRecord']['losses'],        # Away Team Losses {8}
-        game_stat['teams']['away']['leagueRecord']['ot'],            # Away Team OT Wins {9}
+    return{
+             #Home Team Stats
+            'Home Team Name' : game_stat['teams']['home']['team']['name'],                  # Home Team Name {0}
+            'Home Team Score' : game_stat['teams']['home']['score'],                         # Home Team Score {1}
+            'Home Team Wins' : game_stat['teams']['home']['leagueRecord']['wins'],          # Home Team Wins {2}
+            'Home Team Losses' : game_stat['teams']['home']['leagueRecord']['losses'],        # Home Team Losses {3}
+            'Home Team OT' : game_stat['teams']['home']['leagueRecord']['ot'],            # Home Team OT Wins {4}
+            
+            #Away Team Stats
+            'Away Team Name' : game_stat['teams']['away']['team']['name'],                  # Away Team Name {5}
+            'Away Team Score' : game_stat['teams']['away']['score'],                         # Away Team Score {6}
+            'Away Team Wins' : game_stat['teams']['away']['leagueRecord']['wins'],          # Away Team Wins {7}
+            'Away Team Losses' : game_stat['teams']['away']['leagueRecord']['losses'],        # Away Team Losses {8}
+            'Away Team OT' : game_stat['teams']['away']['leagueRecord']['ot'],            # Away Team OT Wins {9}
 
-        game_stat['gamePk'], # Game ID (so when you click the game it goes to the gamestats page) {10}
-        gamestate,       # Game Status (eg. Live/Preview/Final)  {11}
-    ]
+            'Game ID' : game_stat['gamePk'],                            # Game ID (so when you click the game it goes to the gamestats page) {10}
+            'Game State' : gamestate,       # G
+        }
 
 def getPlayerStats(json_data, location):
     player_stats = []
