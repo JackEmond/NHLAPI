@@ -6,34 +6,34 @@
     <h2> by Jack Emond</h2>
 </div>
 
-{% if are_their_games_today == 'yes' %}
+{% if their_are_games_today == 'no' %}
 <h2>Their are no NHL games today. So instead I will show you what the website would look like if their were active games. I will do this by pulling data
     from February 2nd 2019.</h2>
 <br>
 {% endif %}
 
 <div class="boxes">
-    {% for element in game_stats %}
-    <a href="gamestats/{{element[10]}}">
+    {% for stat in game_stats %}
+    <a href="gamestats/{{stat[10]}}">
         <div class="boxscore">
             <div class="team-info"> <!--Home Team-->
-                <img src="/static/images/logos/{{element[0]}}.png">
-                <p>({{element[2]}} - {{element[3]}} - {{element[4]}})</p>
+                <img src="/static/images/logos/{{stat[0]}}.png">
+                <p>({{stat[2]}} - {{stat[3]}} - {{stat[4]}})</p>
             </div>
             <div class="game-status">
-                <p class="score">{{element[1]}} - {{element[6]}}</p>
+                <p class="score">{{stat[1]}} - {{stat[6]}}</p>
                 <p>
-                    {% if element[11] == 'FINAL' or "PM" in element[11] %} 
-                        {{element[11]}}
+                    {% if stat[11] == 'FINAL' or "PM" in stat[11] %} 
+                        {{stat[11]}}
                     {% else %}
-                        <div class="green">{{element[11]}}</div>
+                        <div class="green">{{stat[11]}}</div>
                     {% endif %}
                 </p>
             </div>
             <div class="team-info"> <!--Away Team-->
-                <img src="/static/images/logos/{{element[5]}}.png">
+                <img src="/static/images/logos/{{stat[5]}}.png">
                 <br />
-                <p>({{element[7]}} - {{element[8]}} - {{element[9]}})</p>
+                <p>({{stat[7]}} - {{stat[8]}} - {{stat[9]}})</p>
             </div>
         </div>
     </a>
