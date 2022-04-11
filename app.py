@@ -28,16 +28,16 @@ def game_status(gameid):
 
         # If in military time remove 12 hours 
         if hour >= 13:
-            return str(hour - 12) + second + 'PM'
+            return f"{str(hour - 12)} {second} {PM}"
         else:
-            return str(hour) + second + 'PM'
+            return f"{hour} {second} {PM}"
 
     elif gamestate == 'Final': 
         return 'FINAL'
     else: #game is live. Return what period and how much time is left
         gametime =  json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['periodTimeRemaining']
         gameperiod = json_data['liveData']['plays']['allPlays'][len(json_data['liveData']['plays']['allPlays'])-1]['about']['ordinalNum']
-        return str(gameperiod) + ' ' + str(gametime)
+        return f"{gameperiod} {gametime}"
     #end of function
 
 def getGameStats(game_stat):
@@ -119,8 +119,8 @@ def index():
     #Get the date and convert it so that the api is able to grab all games occuring today
     date = datetime.date.today().strftime("%Y-%m-%d")
     #uncomment below to show gamedata for that specific date. Used for testing purposes
-    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2017-04-06&endDate=2017-04-06'
-    #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
+    #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2017-04-06&endDate=2017-04-06'
+    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
     live_games = requests.get(url).json() 
     
     their_are_games_today = 'yes'
@@ -158,8 +158,8 @@ def gamestats(gamePk):
     
     #GET NHL API Data
     date = datetime.date.today().strftime("%Y-%m-%d")
-    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2017-04-06&endDate=2017-04-06'
-    #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
+    #url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate=2017-04-06&endDate=2017-04-06'
+    url = 'https://statsapi.web.nhl.com/api/v1/schedule?startDate='+ date +'&endDate=' + date
     live_games = requests.get(url).json() 
     
     if not live_games:
@@ -215,9 +215,9 @@ def gamestats(gamePk):
         awayteam = awayteam,
         hometeam = hometeam,
         home_score = home_score,
-        home_stats = '(' + str(home_wins) + ' - ' + str(home_losses)+ ' - ' + str(home_ot) + ')',
+        home_stats = f"({str(home_wins)} - {str(home_losses)} - {str(home_ot)})",
         away_score = away_score,
-        away_stats = '(' + str(away_wins) + ' - ' + str(away_losses)+ ' - ' + str(away_ot) + ')',
+        away_stats = f"({str(away_wins)} - {str(away_losses)} - {str(away_ot)})",
         #score = score,
         gamestate = gamestate,
         year=datetime.date.today().strftime("%Y")

@@ -14,22 +14,6 @@
 
 
 <div class="boxes">
-<<<<<<< HEAD
-    {% for stat in game_stats %}
-    <a href="gamestats/{{stat[10]}}">
-        <div class="boxscore">
-            <div class="team-info"> <!--Home Team-->
-                <img src="/static/images/logos/{{stat[0]}}.png">
-                <p>({{stat[2]}} - {{stat[3]}} - {{stat[4]}})</p>
-            </div>
-            <div class="game-status">
-                <p class="score">{{stat[1]}} - {{stat[6]}}</p>
-                <p>
-                    {% if stat[11] == 'FINAL' or "PM" in stat[11] %} 
-                        {{stat[11]}}
-                    {% else %}
-                        <div class="green">{{stat[11]}}</div>
-=======
     {% for game_stat in game_stats %}
     <a href="gamestats/{{game_stat['Game ID']}}">
         <div class="boxscore">
@@ -44,20 +28,13 @@
                         {{game_stat['Game State']}}
                     {% else %}
                         <div class="green">{{game_stat['Game State']}}</div>
->>>>>>> 79dc9fdd7cdd7d1299a50998319aacb2f8d54100
                     {% endif %}
                 </p>
             </div>
             <div class="team-info"> <!--Away Team-->
-<<<<<<< HEAD
-                <img src="/static/images/logos/{{stat[5]}}.png">
-                <br />
-                <p>({{stat[7]}} - {{stat[8]}} - {{stat[9]}})</p>
-=======
                 <img src="/static/images/Logos/{{game_stat['Away Team Name']}}.png">
                 <br />
                 <p>({{game_stat['Away Team Wins']}} - {{game_stat['Away Team Losses']}} - {{game_stat['Away Team OT']}})</p>
->>>>>>> 79dc9fdd7cdd7d1299a50998319aacb2f8d54100
             </div>
         </div>
     </a>
